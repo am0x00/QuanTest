@@ -1,8 +1,5 @@
 """
 QuanTest demo
-2023/09/28 
-ZiMeng Xiao
-CSU, Chang Sha, China
 """
 import numpy as np
 from matplotlib import pyplot as plt

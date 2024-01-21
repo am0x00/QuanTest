@@ -1,8 +1,5 @@
 """
 tools
-2023/09/28 
-ZiMeng Xiao
-CSU, Chang Sha, China
 """
 import sys
 import os
