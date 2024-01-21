@@ -1,6 +1,3 @@
-"""
-tools
-"""
 import sys
 import os
 import math
@@ -59,6 +56,32 @@ def entQ(now_gimg_state_in, now_gimg_state_out, k):
     ent_psi_stateout = ent_state(now_gimg_state_out[0,0])
     return ent_psi_stateout - k * ent_psi_statein, ent_psi_statein, ent_psi_stateout
     
+def anti_encoding(qimg):
+    """
+    Input:
+        qimg: the image of quantum state
+    Output:
+        Return the classic image
+    """
+    img_real = real(qimg)
+    dim = int(math.sqrt(len(img_real)))
+    div_root = img_real[argmax(img_real)]
+    img_anti = divide(reshape(img_real,[dim, dim]), div_root)
+    return img_anti, img_real[argmax(img_real)]
+    
+def anti_encoding2828(qimg):
+    img_real = real(qimg)
+    dim = 28
+    div_root = img_real[argmax(img_real)]
+    img_anti = divide(reshape(img_real[:784],[dim, dim]), div_root)
+    return img_anti, img_real[argmax(img_real)]
+
+def get_signature():
+    now = datetime.now()
+    past = datetime(2023, 2, 23, 0, 0, 0, 0)
+    timespan = now - past
+    time_sig = int(timespan.total_seconds() * 1000)
+    return str(time_sig)
 
 def DLFuzz2(now_outputs, ori_outputs, w):
     """
@@ -106,6 +129,7 @@ def corherence_noise_channel(input_state, sigma=0.01):
     """
     num_qubits = math.ceil(math.log2(input_state.size) )
     
+    # 添加自定义噪声
     Noisecir = Circuit(num_qubits)
     for i in range(num_qubits):
         Noisecir.u3(qubits_idx=i)
