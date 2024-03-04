@@ -2,22 +2,15 @@
 QuanTest demo
 """
 import numpy as np
-from matplotlib import pyplot as plt
-from paddle import  reshape, argmax, argsort, real, sqrt, divide, matmul, transpose, cast, mean, concat
-from paddle.linalg import pinv
+from paddle import  reshape
 from paddle_quantum.qinfo import state_fidelity, trace_distance
-import sys
 import os
 import time
 from utils import *
 import imageio
 imsave = imageio.imsave
-from paddle_quantum.ansatz import Circuit
 from scipy.linalg import sqrtm 
 from alive_progress import alive_bar # live progress bar
-from Model.QCL import QCL
-from Model.CCQC import CCQC
-from Model.QCNN import QCNN
 from Model.model_load import model_load
 
 paddle.set_device("cpu") # use cpu
@@ -38,8 +31,8 @@ quantum_test_x = paddle.load(f'testData/q{dataset}test8qn{classf_mode}clf.pqtss'
 test_y = np.load(f"testData/{dataset}test_y8qn{classf_mode}clf.npy")
 test_y = paddle.to_tensor(test_y, dtype="int64")
 
-test_img_num = 900 * class_ns
-# test_img_num = 100
+# test_img_num = 900 * class_ns
+test_img_num = 10
 learn_rate = 0.05
 iternums = 5
 qubit_num = 8
@@ -68,7 +61,6 @@ baddatan = 0
 
 net = model_load(N=qubit_num, model=model, dataset=dataset, DEPTH=5, class_nums=class_ns)
 
-time.sleep(1200)
 print("Parameters and info:")
 print("test_img_num: ", test_img_num, "learn_rate: ", learn_rate, "anti_predict_weight: ", anti_predict_weight, "cov_weight: ", cov_weight, "ent_k: ", ent_k)
 print("Output:")
@@ -87,10 +79,6 @@ with alive_bar(test_img_num) as bar:
             continue
         ori_ent_Qorie, ori_ent_in, ori_ent_out = entQ(ori_qimg_state_in, ori_qimg_state_out, ent_k)
         ori_ent_Qnn = ori_ent_out - ori_ent_in
-        print("ori_qimg_label:", ori_label.numpy())
-        print("ori_qimg_acc:", ori_qimg_acc.numpy())
-        print("ori_qimg_outputs: ", ori_qimg_outputs)
-        print("ori_ent_out: %f, ori_ent_in: %f, ori_ent_Qnn: %f" % (ori_ent_out, ori_ent_in, ori_ent_Qnn))
         
         now_qimg_loss, now_qimg_acc, now_qimg_circuit, now_qimg_state_in, now_qimg_state_out, now_qimg_outputs = ori_qimg_loss, ori_qimg_acc, ori_qimg_circuit, ori_qimg_state_in, ori_qimg_state_out, ori_qimg_outputs
         ent_Qorie, now_ent_in, now_ent_out = ori_ent_Qorie, ori_ent_in, ori_ent_out
@@ -98,9 +86,8 @@ with alive_bar(test_img_num) as bar:
         
         iters = 0
         while True:
-            print("\n>>>iters %d : " % iters)
-            iters += 1
-            ## may paddlequantum will give bad datax that failed to find a square root, so
+            # print("\n>>>iters %d : " % iters)
+            iters += 1            
             if True in np.isnan(sqrtm(paddle_quantum.intrinsic._type_transform((now_qimg), "density_matrix").numpy())):
                 baddatan += 1
                 break
@@ -111,7 +98,7 @@ with alive_bar(test_img_num) as bar:
                 obj_orie = DLFuzz3(now_qimg_outputs, ori_qimg_outputs, anti_predict_weight) # orie_deci3
                             
             # obj_orie = FGSM(now_qimg_loss, alpha_FGSM) # orie_cost
-            # obj_orie = BIM(now_qimg_loss, alpha_FGSM) # orie_cost
+            ## obj_orie = BIM(now_qimg_loss, alpha_FGSM) # orie_cost
 
             layer_output = []
             layer_output.append(obj_orie)
@@ -125,15 +112,12 @@ with alive_bar(test_img_num) as bar:
             now_qimg = paddle.complex( paddle.clip((paddle.real(now_qimg + perturb)), 0, 1),paddle.to_tensor(0, dtype=paddle.float32))
             now_qimg = now_qimg / paddle.norm(paddle.abs(now_qimg))
             now_qimg_loss, now_qimg_acc, now_qimg_circuit, now_qimg_state_in, now_qimg_state_out, now_qimg_outputs = net(now_qimg, now_label, classf_n=class_ns) 
-            print("now_qimg_outputs: ", now_qimg_outputs.numpy())
+
             ent_Qorie, ent_in, ent_out = entQ(now_qimg_state_in, now_qimg_state_out, ent_k)
-            incr_entQnn = ent_out - ent_in - ori_ent_Qnn
-            print("out: %f, in: %f, incr_entQnn: %f" % (ent_out, ent_in, incr_entQnn))
-            
+            incr_entQnn = ent_out - ent_in - ori_ent_Qnn            
             
             if now_qimg_acc != 1.0:
-                
-                print("\t get a gen_adversial_img!!!")
+                print("\t get a gen_adversial_img!")
                 f = state_fidelity(now_qimg, ori_img)
                 t = trace_distance(now_qimg, ori_img)
                 print("f: ", f.item())
@@ -168,7 +152,7 @@ Gen_Rate = adversial_num / (test_img_num - baddatan)
 print("total_time: " ,total_time, " with " ,test_img_num - baddatan, " images.")
 print("adversial_num: " ,adversial_num, " with " ,test_img_num - baddatan, " images.")
 print("Metrics:")
-print("Gen Rate: ", Gen_Rate, "QECov: ", QECov, "AFM: ", AFM, "ATD: ", ATD)
+print("Gen Rate: ", Gen_Rate, "QECov: ", QECov.item(), "AFM: ", AFM.item(), "ATD: ", ATD.item())
        
 
 np.save(f"{dirname}/f_list_{model}_{dataset}.npy", f_list)

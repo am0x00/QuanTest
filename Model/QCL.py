@@ -2,12 +2,8 @@ import paddle
 from paddle import matmul, transpose, reshape, argmax, real, cast, mean, concat
 import paddle_quantum
 from paddle_quantum.ansatz import Circuit
-from paddle_quantum.linalg import abs_norm
-from paddle_quantum.gate import AmplitudeEncoding
-from paddle_quantum.dataset import MNIST
 from paddle_quantum.qinfo import pauli_str_to_matrix
 import sys
-#sys.path.append("..")
 import paddle.nn.functional as F
 import numpy as np
 
@@ -113,60 +109,9 @@ def qcl_model_softmax(N, train, DEPTH, class_nums):
         
     return net
 
-# def qcl_model2(N, train, DEPTH):
-#     """
-#     Input:
-#         N: qubits num, train: train or read parms, DEPTH: deepth of Qnn
-#     Output:
-#         Return the Qnn for 2 classf
-#     """
-#     if train:
-#         (qtrainxload, trainyload), (qtestxload, testyload) = load_data_MNIST(Q=True, code_qubit_num=N, classes=[3,6], train_n = 1400, test_n = 300)
-#         print("data load finish.")
-#         EPOCH = 5
-#         LR = 0.05   
-#         BATCH = 100
-#         trainyload = paddle.to_tensor(trainyload, dtype="int64")
-#         testyload = paddle.to_tensor(testyload, dtype="int64")
-#         N_train, in_dim = qtrainxload.shape
-#         paddle.seed(1)
-        
-#     net = QCL(n=N, depth=DEPTH)
-    
-#     if train:
-#         opt = paddle.optimizer.Adam(learning_rate=LR, parameters=net.parameters())
-#         for ep in range(EPOCH):
-#             for itr in range(N_train // BATCH):
-#                 input_state = qtrainxload[itr * BATCH:(itr + 1) * BATCH]  
-#                 input_state = reshape(input_state, [-1, 1, 2 ** N])
-#                 label = trainyload[itr * BATCH:(itr + 1) * BATCH]
-#                 test_input_state = reshape(qtestxload, [-1, 1, 2 ** N])
-#                 train_loss, train_acc, cir, state_in, state_out, outputs = net(state_in=input_state, label=label, classf_n=2)
-#                 if itr % 5 == 0:
-#                     loss_useless, test_acc, t_cir, statein, stateout, outputs = net(state_in=test_input_state, label=testyload, classf_n=2)
-#                     print("epoch:", ep, "iter:", itr,
-#                           "loss: %.4f" % train_loss.numpy(),
-#                           "train acc: %.4f" % train_acc,
-#                           "test acc: %.4f" % test_acc)
-#                 train_loss.backward()
-#                 opt.minimize(train_loss)
-#                 opt.clear_grad()
-                
-#         paddle.save(net.state_dict(), f"qcl_model2clas_{N}qub_{DEPTH}dep.pdparams") 
-        
-#     net_state_dict = paddle.load(f"qcl_model2clas_{N}qub_{DEPTH}dep.pdparams")
-#     net.set_state_dict(net_state_dict)
-        
-#     return net
 
 if __name__ == '__main__':
     qubit_num = int(sys.argv[1])
     qnn_depth = int(sys.argv[2])
     clfn = int(sys.argv[3])
     qcl_model_softmax(N=qubit_num, train=True, DEPTH=qnn_depth, class_nums=clfn)
-    # if classf_mode == 2:
-    #     qcl_model2(N=qubit_num, train=True, DEPTH=qnn_depth)
-    # elif classf_mode == 10: # wait for 3?
-    #     qcl_model10(N=qubit_num, train=True, DEPTH=qnn_depth)
-    # else:
-    #     raise Exception("classf_mode only can be 2 or 10.")

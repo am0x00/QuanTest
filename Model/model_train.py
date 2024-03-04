@@ -1,14 +1,6 @@
 import paddle
-from paddle import matmul, transpose, reshape, argmax, real, cast, mean, concat
-import paddle_quantum
-from paddle_quantum.ansatz import Circuit
-from paddle_quantum.linalg import abs_norm
-from paddle_quantum.gate import AmplitudeEncoding
-from paddle_quantum.dataset import MNIST
-from paddle_quantum.qinfo import pauli_str_to_matrix
+from paddle import reshape
 import sys
-#sys.path.append("..")
-import paddle.nn.functional as F
 import numpy as np
 
 from QCL import QCL

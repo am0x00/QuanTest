@@ -1,13 +1,8 @@
-import sys
-import os
 import math
 import paddle
-import numpy as np
-from paddle import reshape, argmax, argsort, real, concat, sqrt, divide, matmul
+from paddle import reshape, argmax, argsort, real, concat, divide, matmul
 import paddle_quantum
-from paddle_quantum.gate import AmplitudeEncoding
-from paddle_quantum.dataset import MNIST
-from paddle_quantum.linalg import abs_norm, NKron, is_unitary
+from paddle_quantum.linalg import NKron
 from datetime import datetime
 from paddle_quantum.ansatz import Circuit
 
@@ -129,12 +124,9 @@ def corherence_noise_channel(input_state, sigma=0.01):
     """
     num_qubits = math.ceil(math.log2(input_state.size) )
     
-    # 添加自定义噪声
     Noisecir = Circuit(num_qubits)
     for i in range(num_qubits):
         Noisecir.u3(qubits_idx=i)
-        # Noisecir.ry(qubits_idx=i)
-        # Noisecir.rz(qubits_idx=i)
 
     Noisecir.randomize_param(arg0=0, arg1=sigma*math.pi, initializer_type='Normal')
     Utheta = Noisecir.unitary_matrix()
