@@ -1,6 +1,6 @@
-## Demo
+## QuanTest: Entanglement-Guided Testing of Quantum Neural Network Systems
 
-Details can be found in the code comments.
+QuanTest is a quantum entanglement-guided adversarial testing framework to uncover potential erroneous behaviors in quantum neural network systems.
 
 ### Dependencies
 
